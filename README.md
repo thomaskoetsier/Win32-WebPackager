@@ -1,5 +1,7 @@
 # Web-based Win32 Content Packager
 
+![Demo](./assets/demo.gif)
+
 A web application for packaging files using Microsoft's Win32 Content Prep Tool (IntuneWinAppUtil.exe) for Intune deployment. Upload your application files, and the tool will package them into the .intunewin format with a download link valid for 7 days.
 
 ## Features
