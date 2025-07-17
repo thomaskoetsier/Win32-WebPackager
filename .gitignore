@@ -32,9 +32,6 @@ packages/
 # Package metadata
 packages_db.json
 
-# Assets (demo files)
-assets/
-
 # OS generated files
 .DS_Store
 .DS_Store?
