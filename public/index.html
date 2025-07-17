@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Win32 Content Packager - Create Intunewin Apps Online</title>
+    <style>
+        :root {
+            --primary-color: #0078d4;
+            --secondary-color: #40e0d0;
+            --accent-color: #ff6b6b;
+            --bg-light: #f8f9fa;
+            --bg-dark: #1a1a1a;
+            --text-light: #333;
+            --text-dark: #f0f0f0;
+            --card-bg-light: #ffffff;
+            --card-bg-dark: #2d2d2d;
+            --border-light: #e0e0e0;
+            --border-dark: #444;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: var(--bg-dark);
+            --text-color: var(--text-dark);
+            --card-bg: var(--card-bg-dark);
+            --border-color: var(--border-dark);
+            --hover-bg: #3a3a3a;
+            --input-bg: #2a2a2a;
+        }
+
+        [data-theme="light"] {
+            --bg-color: var(--bg-light);
+            --text-color: var(--text-light);
+            --card-bg: var(--card-bg-light);
+            --border-color: var(--border-light);
+            --hover-bg: #f0f0f0;
+            --input-bg: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 1.5rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo-icon {
+            font-size: 2rem;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.5);
+            border-radius: 30px;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+            font-weight: 500;
+        }
+
+        .theme-toggle:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        /* Main Content */
+        main {
+            flex: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            width: 100%;
+        }
+
+        .container {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 0.5rem;
+            font-size: 2.5rem;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: var(--text-color);
+            opacity: 0.8;
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+        }
+
+        /* Upload Area */
+        .upload-area {
+            border: 3px dashed var(--primary-color);
+            border-radius: 12px;
+            padding: 3rem 1.5rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            background: var(--hover-bg);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .upload-area:hover {
+            border-color: var(--secondary-color);
+            background: var(--input-bg);
+        }
+
+        .upload-area.drag-over {
+            background: rgba(64, 224, 208, 0.1);
+            border-color: var(--secondary-color);
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 4rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .upload-text {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .upload-hint {
+            opacity: 0.7;
+            font-size: 0.95rem;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        /* File List */
+        .file-list {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 2rem;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+            background: var(--hover-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+            animation: slideIn 0.3s ease;
+            gap: 1rem;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex: 1;
+        }
+
+        .file-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--primary-color);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.85rem;
+        }
+
+        .file-details {
+            flex: 1;
+        }
+
+        .file-name {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .file-size {
+            font-size: 0.85rem;
+            opacity: 0.7;
+        }
+
+        /* Setup File Selection */
+        .setup-selector {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-left: 1rem;
+        }
+
+        .radio-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .radio-wrapper input[type="radio"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .radio-wrapper label {
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .remove-btn {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .remove-btn:hover {
+            background: #ff5252;
+            transform: scale(1.05);
+        }
+
+        /* Setup File Notice */
+        .setup-file-notice {
+            background: rgba(0, 120, 212, 0.1);
+            border: 2px solid var(--primary-color);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            display: none;
+        }
+
+        .setup-file-notice.show {
+            display: block;
+        }
+
+        .setup-file-notice strong {
+            color: var(--primary-color);
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: #0062aa;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 120, 212, 0.3);
+        }
+
+        .btn-primary:disabled {
+            background: #999;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: var(--hover-bg);
+            color: var(--text-color);
+            border: 2px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-color);
+        }
+
+        /* Progress Section */
+        .progress-section {
+            display: none;
+            margin-bottom: 2rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: var(--hover-bg);
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            width: 0%;
+            transition: width 0.5s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .progress-text {
+            text-align: center;
+            margin-top: 1rem;
+            font-weight: 500;
+        }
+
+        /* Result Section */
+        .result-section {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+            background: rgba(64, 224, 208, 0.1);
+            border-radius: 12px;
+            border: 2px solid var(--secondary-color);
+        }
+
+        .success-icon {
+            font-size: 4rem;
+            color: var(--secondary-color);
+            margin-bottom: 1rem;
+        }
+
+        .download-link {
+            display: inline-block;
+            padding: 1rem 2.5rem;
+            background: var(--secondary-color);
+            color: var(--bg-dark);
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            margin-top: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .download-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(64, 224, 208, 0.4);
+        }
+
+        /* Error Message */
+        .error-message {
+            display: none;
+            padding: 1.5rem;
+            background: rgba(255, 107, 107, 0.1);
+            border: 2px solid var(--accent-color);
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+
+        .error-title {
+            color: var(--accent-color);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .error-details {
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9rem;
+            background: var(--bg-dark);
+            color: #f0f0f0;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-top: 0.5rem;
+            overflow-x: auto;
+        }
+
+        /* About Section */
+        .about-section {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            padding: 2.5rem;
+            margin-top: 2rem;
+        }
+
+        .about-section h2 {
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            font-size: 2rem;
+        }
+
+        .about-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .about-card {
+            background: var(--hover-bg);
+            border-radius: 8px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .about-card h3 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .about-card p {
+            line-height: 1.6;
+            opacity: 0.9;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--card-bg);
+            border-top: 1px solid var(--border-color);
+            padding: 2rem 0;
+            margin-top: auto;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            text-align: center;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .footer-links a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: var(--secondary-color);
+        }
+
+        .footer-text {
+            opacity: 0.7;
+            font-size: 0.9rem;
+        }
+
+        /* Utilities */
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 0.5rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--hover-bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--secondary-color);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .container {
+                padding: 1.5rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .about-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-links {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body data-theme="light">
+    <!-- Header -->
+    <header>
+        <div class="header-content">
+            <div class="logo">
+                <span class="logo-icon">📦</span>
+                <span>Win32 Content Packager</span>
+            </div>
+            <button class="theme-toggle" id="themeToggle">
+                <span id="themeIcon">🌙</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <div class="container">
+            <h1>Package Your Applications</h1>
+            <p class="subtitle">Convert your Win32 applications into Intune-ready packages</p>
+
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">📤</div>
+                <p class="upload-text">Drag & drop your application files here</p>
+                <p class="upload-hint">or click to browse (Max 1GB)</p>
+                <input type="file" id="fileInput" multiple>
+            </div>
+
+            <div class="setup-file-notice" id="setupFileNotice">
+                <strong>Setup file selected:</strong> <span id="selectedSetupFile">None</span>
+            </div>
+
+            <div class="file-list" id="fileList"></div>
+
+            <div class="action-buttons">
+                <button class="btn btn-secondary" id="clearBtn">Clear All Files</button>
+                <button class="btn btn-primary" id="packageBtn" disabled>
+                    <span id="btnText">Package Files</span>
+                </button>
+            </div>
+
+            <div class="progress-section" id="progressSection">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <p class="progress-text" id="progressText">Processing...</p>
+            </div>
+
+            <div class="error-message" id="errorMessage">
+                <div class="error-title">Packaging Error</div>
+                <div id="errorText"></div>
+                <pre class="error-details" id="errorDetails"></pre>
+            </div>
+
+            <div class="result-section" id="resultSection">
+                <div class="success-icon">✨</div>
+                <h2>Package Created Successfully!</h2>
+                <p>Your download link is ready and will be valid for 24 hours.</p>
+                <a href="#" class="download-link" id="downloadLink" download>Download Package</a>
+            </div>
+        </div>
+
+        <!-- About Section -->
+        <div class="about-section">
+            <h2>About Win32 Content Packager</h2>
+            <p>This tool simplifies the process of preparing Win32 applications for Microsoft Intune deployment. It uses Microsoft's official Win32 Content Prep Tool to create .intunewin packages that can be uploaded directly to your Intune portal.</p>
+            
+            <div class="about-grid">
+                <div class="about-card">
+                    <h3>📋 How to Use</h3>
+                    <p>1. Upload your application files using drag & drop or the file browser<br>
+                    2. Select which file is your main setup executable<br>
+                    3. Click "Package Files" to create your .intunewin package<br>
+                    4. Download your package when ready<br>
+                    5. Upload to Microsoft Intune</p>
+                </div>
+                
+                <div class="about-card">
+                    <h3>⚡ Features</h3>
+                    <p>• Max total file size up to 1GB<br>
+                    • Upload multiple files at once<br>
+                    • Automatic cleanup after 24 hours<br>
+                    • Cloud based - no need for any device installs</p>
+                </div>
+                
+                <div class="about-card">
+                    <h3>🛡️ Security</h3>
+                    <p>Files are automatically deleted after 24 hours, and download links are uniquely generated for each package. We do not store or access your application data beyond the packaging process.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="https://docs.microsoft.com/en-us/mem/intune/" target="_blank">Intune Documentation</a>
+                <a href="https://github.com/Microsoft/Microsoft-Win32-Content-Prep-Tool" target="_blank">Win32 Content Prep Tool</a>
+            </div>
+            <p class="footer-text">
+                © 2025 Win32 Content Packager. Built with Microsoft Win32 Content Prep Tool.<br>
+                Not affiliated with Microsoft Corporation.
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Theme Management
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        const themeText = document.getElementById('themeText');
+        const body = document.body;
+
+        // Load saved theme
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        body.setAttribute('data-theme', savedTheme);
+        updateThemeToggle(savedTheme);
+
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            body.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeToggle(newTheme);
+        });
+
+        function updateThemeToggle(theme) {
+            if (theme === 'dark') {
+                themeIcon.textContent = '☀️';
+            } else {
+                themeIcon.textContent = '🌙';
+            }
+        }
+
+        // File Management
+        let uploadedFiles = [];
+        let selectedSetupFile = null;
+        
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const fileList = document.getElementById('fileList');
+        const clearBtn = document.getElementById('clearBtn');
+        const packageBtn = document.getElementById('packageBtn');
+        const progressSection = document.getElementById('progressSection');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+        const resultSection = document.getElementById('resultSection');
+        const errorMessage = document.getElementById('errorMessage');
+        const errorText = document.getElementById('errorText');
+        const errorDetails = document.getElementById('errorDetails');
+        const downloadLink = document.getElementById('downloadLink');
+        const btnText = document.getElementById('btnText');
+        const setupFileNotice = document.getElementById('setupFileNotice');
+        const selectedSetupFileSpan = document.getElementById('selectedSetupFile');
+
+        // File upload handling
+        uploadArea.addEventListener('click', () => fileInput.click());
+        
+        fileInput.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+        });
+
+        // Drag and drop
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('drag-over');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('drag-over');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('drag-over');
+            handleFiles(e.dataTransfer.files);
+        });
+
+        function handleFiles(files) {
+            const maxSize = 1024 * 1024 * 1024; // 1GB
+            
+            for (let file of files) {
+                if (file.size > maxSize) {
+                    showError(`File "${file.name}" exceeds 1GB limit`, `File size: ${formatFileSize(file.size)}`);
+                    continue;
+                }
+                
+                if (!uploadedFiles.find(f => f.name === file.name)) {
+                    uploadedFiles.push(file);
+                }
+            }
+            updateFileList();
+            updateButtonState();
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+            return (bytes / (1024 * 1024 * 1024)).toFixed(2) + ' GB';
+        }
+
+        function getFileExtension(filename) {
+            const ext = filename.split('.').pop().toUpperCase();
+            return ext.substring(0, 4);
+        }
+
+        function updateFileList() {
+            fileList.innerHTML = '';
+            uploadedFiles.forEach((file, index) => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                fileItem.innerHTML = `
+                    <div class="file-info">
+                        <div class="file-icon">${getFileExtension(file.name)}</div>
+                        <div class="file-details">
+                            <div class="file-name">${file.name}</div>
+                            <div class="file-size">${formatFileSize(file.size)}</div>
+                        </div>
+                        <div class="setup-selector">
+                            <div class="radio-wrapper">
+                                <input type="radio" id="setup-${index}" name="setupFile" value="${file.name}" 
+                                    ${selectedSetupFile === file.name ? 'checked' : ''}>
+                                <label for="setup-${index}">Setup file</label>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="remove-btn" onclick="removeFile(${index})">Remove</button>
+                `;
+                fileList.appendChild(fileItem);
+            });
+
+            // Add event listeners to radio buttons
+            document.querySelectorAll('input[name="setupFile"]').forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    selectedSetupFile = e.target.value;
+                    updateSetupFileNotice();
+                    updateButtonState();
+                });
+            });
+
+            // Auto-select first .exe file if available, but don't make it mandatory
+            if (uploadedFiles.length > 0) {
+                const exeFile = uploadedFiles.find(f => f.name.toLowerCase().endsWith('.exe'));
+                if (exeFile && !selectedSetupFile) {
+                    selectedSetupFile = exeFile.name;
+                    const index = uploadedFiles.indexOf(exeFile);
+                    const radio = document.getElementById(`setup-${index}`);
+                    if (radio) radio.checked = true;
+                }
+            }
+
+            updateSetupFileNotice();
+        }
+
+        function updateSetupFileNotice() {
+            if (selectedSetupFile) {
+                setupFileNotice.classList.add('show');
+                selectedSetupFileSpan.textContent = selectedSetupFile;
+            } else {
+                setupFileNotice.classList.remove('show');
+                selectedSetupFileSpan.textContent = 'None';
+            }
+        }
+
+        function removeFile(index) {
+            const removedFile = uploadedFiles[index];
+            uploadedFiles.splice(index, 1);
+            
+            // Clear setup selection if removed file was selected
+            if (selectedSetupFile === removedFile.name) {
+                selectedSetupFile = null;
+            }
+            
+            updateFileList();
+            updateButtonState();
+        }
+
+        function updateButtonState() {
+            packageBtn.disabled = uploadedFiles.length === 0 || !selectedSetupFile;
+        }
+
+        clearBtn.addEventListener('click', () => {
+            uploadedFiles = [];
+            selectedSetupFile = null;
+            updateFileList();
+            updateButtonState();
+            hideError();
+            hideResult();
+        });
+
+        function showError(message, details = '') {
+            errorText.textContent = message;
+            errorDetails.textContent = details;
+            errorDetails.style.display = details ? 'block' : 'none';
+            errorMessage.style.display = 'block';
+        }
+
+        function hideError() {
+            errorMessage.style.display = 'none';
+        }
+
+        function hideResult() {
+            resultSection.style.display = 'none';
+        }
+
+        packageBtn.addEventListener('click', async () => {
+            if (uploadedFiles.length === 0) {
+                showError('No files uploaded', 'Please upload at least one file to package.');
+                return;
+            }
+            
+            if (!selectedSetupFile) {
+                showError('No setup file selected', 'Please select which file is your main setup executable by clicking the radio button next to it.');
+                return;
+            }
+
+            // Reset UI
+            hideError();
+            hideResult();
+            
+            // Show progress
+            packageBtn.disabled = true;
+            btnText.innerHTML = '<span class="spinner"></span>Processing...';
+            progressSection.style.display = 'block';
+            progressFill.style.width = '0%';
+            progressText.textContent = 'Preparing files...';
+
+            try {
+                // Create FormData
+                const formData = new FormData();
+                uploadedFiles.forEach(file => {
+                    formData.append('files', file);
+                });
+                formData.append('setupFile', selectedSetupFile);
+
+                // Calculate total size for progress tracking
+                const totalSize = uploadedFiles.reduce((sum, file) => sum + file.size, 0);
+                let uploadedSize = 0;
+
+                // Create XMLHttpRequest for progress tracking
+                const xhr = new XMLHttpRequest();
+
+                // Track upload progress
+                xhr.upload.addEventListener('progress', (e) => {
+                    if (e.lengthComputable) {
+                        uploadedSize = e.loaded;
+                        const percentComplete = Math.round((e.loaded / e.total) * 100);
+                        progressFill.style.width = percentComplete + '%';
+                        
+                        if (percentComplete < 100) {
+                            progressText.textContent = `Uploading... ${percentComplete}% (${formatFileSize(uploadedSize)} / ${formatFileSize(totalSize)})`;
+                        } else {
+                            progressText.textContent = 'Processing package...';
+                        }
+                    }
+                });
+
+                // Handle response
+                const responsePromise = new Promise((resolve, reject) => {
+                    xhr.onload = function() {
+                        if (xhr.status >= 200 && xhr.status < 300) {
+                            try {
+                                const contentType = xhr.getResponseHeader('content-type');
+                                if (contentType && contentType.includes('application/json')) {
+                                    resolve({ ok: true, data: JSON.parse(xhr.responseText) });
+                                } else {
+                                    resolve({ ok: true, data: { downloadUrl: xhr.responseText } });
+                                }
+                            } catch (e) {
+                                reject(new Error('Invalid response from server'));
+                            }
+                        } else {
+                            try {
+                                const contentType = xhr.getResponseHeader('content-type');
+                                let errorData;
+                                
+                                if (contentType && contentType.includes('application/json')) {
+                                    errorData = JSON.parse(xhr.responseText);
+                                } else {
+                                    errorData = { error: 'Server error', details: xhr.responseText.substring(0, 200) };
+                                }
+                                
+                                resolve({ ok: false, data: errorData });
+                            } catch (e) {
+                                resolve({ ok: false, data: { error: `HTTP ${xhr.status}`, details: xhr.statusText } });
+                            }
+                        }
+                    };
+
+                    xhr.onerror = function() {
+                        reject(new Error('Network error - please check your connection'));
+                    };
+
+                    xhr.ontimeout = function() {
+                        reject(new Error('Request timed out - file may be too large'));
+                    };
+                });
+
+                // Send request
+                xhr.open('POST', '/api/package');
+                xhr.timeout = 600000; // 10 minute timeout for large files
+                xhr.send(formData);
+
+                // Wait for response
+                const response = await responsePromise;
+
+                if (!response.ok) {
+                    throw new Error(response.data.error || 'Packaging failed', { cause: response.data.details });
+                }
+
+                const result = response.data;
+
+                // Complete progress
+                progressFill.style.width = '100%';
+                progressText.textContent = 'Complete!';
+
+                // Show result
+                setTimeout(() => {
+                    progressSection.style.display = 'none';
+                    resultSection.style.display = 'block';
+                    downloadLink.href = result.downloadUrl;
+                }, 1000);
+
+            } catch (error) {
+                showError(error.message, error.cause || '');
+                progressSection.style.display = 'none';
+            } finally {
+                packageBtn.disabled = false;
+                btnText.textContent = 'Package Files';
+                updateButtonState();
+            }
+        });
+
+        // Window global for file removal
+        window.removeFile = removeFile;
+    </script>
+</body>
+</html>
